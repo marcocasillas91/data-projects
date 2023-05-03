@@ -1,0 +1,30 @@
+#!/bin/sh
+
+scriptfile=$2
+echo "scriptfile is $scriptfile"
+
+if [ ! -f $scriptfile ]
+then 
+    echo "Backup script $scriptfile does not exist :("
+    exit
+else
+    #Create database if it did not existed
+
+    echo "Original dbname is $1"
+    dbname=$(mysql -e "show databases"|grep $1)
+    #dbname=$(mysql -e "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '$1'" | grep $1)
+    echo "dbname is $dbname"
+    #if [ $dbname != $1 ]
+    if [ -z "$dbname" ]
+    then
+        echo "Creating database"
+        mysql -e "create database $1"   
+        echo "Database did not exist, so a new one was created"
+    fi
+
+    #Restore from script
+    mysql -e "use $1"
+    mysql $1 < $scriptfile
+
+    echo "Restore script was executed"
+fi
